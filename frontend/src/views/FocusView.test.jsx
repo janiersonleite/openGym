@@ -197,3 +197,11 @@ describe('Focus view cardio speed', () => {
     expect(stored()).toBe(8.5)
   })
 })
+
+describe('Focus view cardio total', () => {
+  const BIKE = '2138'
+  it('adds the minutes of every segment up in a tag, and not on a rep exercise', () => {
+    mount({ id: BIKE, target: { sets: 2, min: 10, speed: 8 }, sets: [{ min: 10, speed: 8, done: false }, { min: 5, speed: 9, done: false }] })
+    expect(container.querySelector('.cardio-total')?.textContent).toBe('Total: 15 min')
+  })
+})

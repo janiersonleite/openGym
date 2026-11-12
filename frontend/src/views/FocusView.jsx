@@ -16,6 +16,7 @@ import {
 } from '../lib/workout-model.js'
 import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
+import { planMinutes } from '../lib/cardio-plans.js'
 import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
 import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
@@ -318,6 +319,7 @@ export default function FocusView({
       <div className="focus-context">
         <div className="focus-tags">
           {mode === 'cardio' && <span className="tag acc">{t('Cardio')}</span>}
+          {mode === 'cardio' && planMinutes({ segments: entry.sets }) > 0 && <span className="tag acc nocap cardio-total"><Icon name="clock" />{t('Total: {0} min', fmtNum(planMinutes({ segments: entry.sets })))}</span>}
           {isSideSet(set) && <span className="tag acc">{t('Per side')}</span>}
           {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
           {ex.eq && <span className="tag">{t(ex.eq)}</span>}

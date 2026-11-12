@@ -139,6 +139,17 @@ describe('the total time of the cardio', () => {
     renderWorkout([entry(BIKE, [seg(30, 20)])])
     expect(total()).toBe('Total: 30 min')
   })
+  it('grows with every segment added, in the tag and in the line under the rows', () => {
+    renderWorkout([entry(TREADMILL, [seg(3, 5, 4)])])
+    expect(total()).toBe('Total: 3 min')
+    expect(container.querySelector('.cardio-total-line').textContent).toBe('Total: 3 min')
+    const add = [...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'Add set')
+    act(() => add.click())
+    // The new row copies the last one: 3 + 3.
+    expect(sets()).toHaveLength(2)
+    expect(total()).toBe('Total: 6 min')
+    expect(container.querySelector('.cardio-total-line').textContent).toBe('Total: 6 min')
+  })
   it('counts the segments already done too, and is not on a rep exercise', () => {
     renderWorkout([entry(TREADMILL, [{ min: 5, speed: 5, done: true }, seg(10, 6)])])
     expect(total()).toBe('Total: 15 min')

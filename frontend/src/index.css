@@ -3285,3 +3285,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+/* Cardio: the minutes of every segment added up, under the rows (views/Workout.jsx). */
+.cardio-total-line { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin: 6px 4px 0; font-size: 14px; font-weight: 600; color: var(--green); }
+.cardio-total-line svg { width: 16px; height: 16px; }

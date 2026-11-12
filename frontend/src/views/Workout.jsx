@@ -919,6 +919,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           </>}
         </div>
       })}
+      {/* The same total as the tag up top, where the rows are added: it grows with each segment. */}
+      {cardio && planMinutes({ segments: entry.sets }) > 0 && <div className="cardio-total-line"><Icon name="clock" />{t('Total: {0} min', fmtNum(planMinutes({ segments: entry.sets })))}</div>}
       <div style={{ height: 8 }} />
       {wc.setShortcuts ? <div className="row" style={{ flexWrap: 'wrap' }}>
         <Button size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
