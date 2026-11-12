@@ -7,7 +7,9 @@
 // they are — including every existing profile whose `lang` is the old default.
 //
 // For a marked copy, the instance's DEFAULT_LANG (GET /api/config `default_lang`) comes first,
-// then the first of the browser's languages this app speaks, then English.
+// then FALLBACK_LANG. This fork starts in Brazilian Portuguese whatever the browser's language is
+// (upstream goes on to the browser's languages, then English); picking a language in Settings
+// still wins, and a profile that already chose one is left alone.
 //
 // That answer is worked out where the language is used (effectiveLang) and never written back
 // into the state. It depends on the device — two phones of one profile can have browsers in two
@@ -17,6 +19,9 @@
 import { LANGS } from './i18n-core.js'
 
 const KEYS = Object.keys(LANGS)
+
+/** The language a profile that never picked one starts in when the instance names none. */
+export const FALLBACK_LANG = 'pt-BR'
 
 /** A language tag ('pt-BR', 'pt_br', 'de-AT', 'en-US') as one of LANGS' keys, or null. */
 export function matchLocale(tag) {
@@ -33,11 +38,9 @@ export function matchLocale(tag) {
 }
 
 /** The language a copy that never chose one should be in, or null for a copy that chose. */
-export function autoLang(S, config, navLangs = []) {
+export function autoLang(S, config) {
   if (!S || S.langAuto !== true) return null
-  return matchLocale(config?.default_lang)
-    || (navLangs || []).map(matchLocale).find(Boolean)
-    || 'en'
+  return matchLocale(config?.default_lang) || FALLBACK_LANG
 }
 
 // The instance's DEFAULT_LANG as last seen on this device, so a boot does not show the browser's
@@ -54,18 +57,14 @@ function cachedDefaultLang() {
 /**
  * The language to show this copy in, on this device: its own `lang`, or for a copy that never
  * picked one, what autoLang says. Before the config is in, the default this device last saw
- * stands in for it; with none seen yet the copy's stored language is used unchanged.
+ * stands in for it; with none seen yet, FALLBACK_LANG.
  */
-export function effectiveLang(S, config, navLangs = browserLangs()) {
+export function effectiveLang(S, config) {
   const own = (S && typeof S.lang === 'string' && S.lang) || 'en'
   if (!S || S.langAuto !== true) return own
-  let cfg = config
-  if (!cfg) {
-    const seen = cachedDefaultLang()
-    if (seen === null) return own
-    cfg = { default_lang: seen }
-  }
-  return autoLang(S, cfg, navLangs) || own
+  // No answer from the instance yet and none remembered: the fallback stands in.
+  const cfg = config || { default_lang: cachedDefaultLang() || '' }
+  return autoLang(S, cfg) || own
 }
 
 export function browserLangs() {

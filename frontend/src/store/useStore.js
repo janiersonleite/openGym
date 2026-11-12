@@ -5,7 +5,7 @@ import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { syncGymInventory } from '../lib/gym-inventory.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
-import { rememberDefaultLang } from '../lib/default-lang.js'
+import { FALLBACK_LANG, rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { stateJson } from '../lib/state-json.js'
 import { copyBefore } from '../lib/safety-store.js'
@@ -26,7 +26,6 @@ import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, ren
 import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { initCoachSchedule } from '../lib/coach-schedule.js'
-import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
@@ -315,17 +314,10 @@ export function draftOf(prev) {
   }
 }
 
-// First run on a device whose language renders right-to-left starts in that language
-// rather than English; the boot script in index.html mirrors this check for the
-// pre-paint direction. The choice is persisted like any other setting once the user
-// picks a language.
-const detectedLang = () => {
-  try {
-    const base = (navigator.language || '').toLowerCase().split('-')[0]
-    if (RTL_LANGS.has(base)) return base
-  } catch (e) { /* ignore */ }
-  return 'en'
-}
+// A first run starts in FALLBACK_LANG (Brazilian Portuguese in this fork, lib/default-lang.js);
+// the boot script in index.html mirrors it for the pre-paint language. The choice is persisted
+// like any other setting once the user picks a language.
+const detectedLang = () => FALLBACK_LANG
 
 // A copy started from nothing on this device. `langAuto` marks its language as one nobody has
 // picked yet, so the instance's DEFAULT_LANG or the browser's language may set it
