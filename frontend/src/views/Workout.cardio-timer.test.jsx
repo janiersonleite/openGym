@@ -130,6 +130,24 @@ describe('the clock on a cardio segment', () => {
   })
 })
 
+describe('the total time of the cardio', () => {
+  const total = () => container.querySelector('.cardio-total')?.textContent
+  it('adds every segment up, and a plain one-row exercise shows its minutes', () => {
+    renderWorkout([entry(TREADMILL, [seg(3, 5, 4), seg(3, 5.4, 7), seg(15, 5.6)])])
+    expect(total()).toBe('Total: 21 min')
+    act(() => root.unmount()); container.remove(); root = null
+    renderWorkout([entry(BIKE, [seg(30, 20)])])
+    expect(total()).toBe('Total: 30 min')
+  })
+  it('counts the segments already done too, and is not on a rep exercise', () => {
+    renderWorkout([entry(TREADMILL, [{ min: 5, speed: 5, done: true }, seg(10, 6)])])
+    expect(total()).toBe('Total: 15 min')
+    act(() => root.unmount()); container.remove(); root = null
+    renderWorkout([{ id: '0576', target: { sets: 1, reps: 10 }, sets: [{ w: 20, r: 10, done: false }] }])
+    expect(total()).toBeUndefined()
+  })
+})
+
 describe('choosing a plan from the exercise menu', () => {
   const planSheet = () => {
     const sheet = useUI.getState().sheets.at(-1)
