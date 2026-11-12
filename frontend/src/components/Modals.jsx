@@ -56,8 +56,10 @@ function Sheet({ sheet }) {
 
   // a gesture that begins on a slider (or opted-out control) belongs to that control, not to
   // the sheet's swipe-to-dismiss — so it keeps working while you drag. Horizontal strips are
-  // opted out too: a sideways scroll must never wobble or pull down the sheet.
-  const NODRAG = 'input[type=range], [data-nodrag], .chips, .hm-wrap'
+  // opted out too: a sideways scroll must never wobble or pull down the sheet. So is a text box:
+  // a finger dragged down inside one scrolls its text (a pasted plan, a note), it is not a pull on
+  // the sheet. The grip and the title above it still pull the sheet down.
+  const NODRAG = 'input[type=range], textarea, [data-nodrag], .chips, .hm-wrap'
   const begin = (target, x, y) => {
     const el = ref.current
     if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }

@@ -203,6 +203,38 @@ describe('Modals mouse dragging', () => {
     expect(mocks.state.sheets).toHaveLength(1)
   })
 
+  it('leaves a text box to its own scrolling: a pull down inside it does not close the sheet', async () => {
+    await setSheets([sheet('notes', {
+      render: () => React.createElement('textarea', { rows: 3, defaultValue: 'a\nb\nc\nd\ne\nf' }),
+    })])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(container.querySelector('textarea'), 'mousedown', 10)
+      mouse(sheetEl, 'mousemove', 80)
+      mouse(sheetEl, 'mousemove', 220)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('still closes on a pull that starts outside the text box', async () => {
+    await setSheets([sheet('notes2', {
+      render: () => React.createElement('div', null, React.createElement('h3', null, 'Title'), React.createElement('textarea', { rows: 3 })),
+    })])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+    await act(async () => {
+      mouse(container.querySelector('h3'), 'mousedown', 10)
+      mouse(sheetEl, 'mousemove', 60)
+      mouse(sheetEl, 'mousemove', 220)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).not.toBe('')
+  })
+
   it('releases a drag when mouseup occurs outside the sheet', async () => {
     // a slow pull: synthetic events fire in the same tick, which would read as a flick
     let now = 0
