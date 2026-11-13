@@ -19,6 +19,7 @@ import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { FormVideosSection } from './components/SetVideo.jsx'
+import { cardioPlansSheet } from './components/CardioPlansSheet.jsx'
 import { workoutSetVideos } from './lib/set-videos.js'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
@@ -1333,6 +1334,8 @@ function ExerciseDetail({ ex, close }) {
     {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
+    {/* Cardio plans can be written here, with no workout going: the list of plans and their editor. */}
+    {isCardio(ex) && <Button icon="list" style={{ marginTop: 4 }} onClick={() => cardioPlansSheet({ sets: [], withIncline: inclineFits(ex) })}>{t('Cardio plans')}</Button>}
     <FormVideosSection exId={ex.id} />
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}

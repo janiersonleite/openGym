@@ -11,12 +11,15 @@ import { INCLINE_MAX, INCLINE_STEP, clampIncline } from '../lib/incline.js'
 import { NAME_MAX, PLAN_MAX_SEGMENTS, SEGMENT_MIN_MAX, SPEED_MAX, newPlan, parsePlanText, planMinutes, plansOf, removePlan, savePlan, setsToSegments } from '../lib/cardio-plans.js'
 import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
 import { Button, Stepper } from './ui.jsx'
+import Icon from './Icon.jsx'
 
 const BLANK = { min: 5, speed: 5 }
 
 /**
  * `sets`: the exercise's rows right now (to save as a plan). `withIncline`: the exercise has a grade.
- * `onApply(plan)`: the plan was picked; the caller writes it into the workout.
+ * `onApply(plan)`: the plan was picked; the caller writes it into the workout. Without it (opened
+ * from the exercise's page, outside any workout) there is nothing to load a plan into: tapping a
+ * plan opens it to edit, and the sheet is for writing, changing and deleting plans.
  */
 export default function CardioPlansSheet({ close, sets, withIncline, onApply }) {
   const S = useStore(s => s.S)
@@ -31,7 +34,8 @@ export default function CardioPlansSheet({ close, sets, withIncline, onApply }) 
   const pasteRef = useRef(null)
   const onNameFocus = useSheetKeyboard(nameRef)
   const onPasteFocus = useSheetKeyboard(pasteRef)
-  const mine = setsToSegments(sets)
+  const mine = setsToSegments(sets || [])
+  const totalMin = fmtNum(planMinutes({ segments: draft?.segments || [] }))
 
   const edit = (seg, extra = {}) => { setDraft({ name: '', segments: seg, ...extra }); setView('edit') }
   const backToList = () => { setView('list'); setDraft(null); setNote('') }
@@ -78,6 +82,10 @@ export default function CardioPlansSheet({ close, sets, withIncline, onApply }) 
       <input ref={nameRef} className="input" type="text" maxLength={NAME_MAX} value={draft.name} aria-label={t('Plan name')}
         placeholder={t('Plan name')} onFocus={onNameFocus} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} />
       {note && <div className="small dim" role="status" style={{ marginTop: 8 }}>{note}</div>}
+      {/* Live: it follows every minute typed or segment added, before anything is saved. */}
+      <div className="cardio-total-line cardio-plan-total" role="status" style={{ justifyContent: 'flex-start', margin: '10px 0 0' }}>
+        <Icon name="clock" />{t('Segments: {0} · {1} min', segs.length, totalMin)}
+      </div>
       <div style={{ marginTop: 10 }}>
         {segs.map((g, i) => (
           <div key={i} className="cardio-seg">
@@ -97,7 +105,7 @@ export default function CardioPlansSheet({ close, sets, withIncline, onApply }) 
           </div>
         ))}
       </div>
-      <div className="small dim" style={{ margin: '4px 0 10px' }}>{t('Total: {0} min', fmtNum(planMinutes({ segments: segs })))}</div>
+      <div className="cardio-total-line" style={{ margin: '4px 0 10px' }}><Icon name="clock" />{t('Total: {0} min', totalMin)}</div>
       <Button icon="plus" disabled={segs.length >= PLAN_MAX_SEGMENTS}
         onClick={() => setDraft(d => ({ ...d, segments: [...d.segments, { ...(d.segments[d.segments.length - 1] || BLANK) }] }))}>{t('Add segment')}</Button>
       <div style={{ height: 14 }} />
@@ -126,7 +134,8 @@ export default function CardioPlansSheet({ close, sets, withIncline, onApply }) 
       : <div className="list" style={{ marginBottom: 12 }}>
         {plans.map(p => (
           <div key={p.id} className="item">
-            <button type="button" className="grow cardio-plan-pick" onClick={() => { onApply(p); close() }}>
+            <button type="button" className="grow cardio-plan-pick"
+              onClick={() => { if (onApply) { onApply(p); close() } else edit(p.segments.map(g => ({ ...g })), { id: p.id, at: p.at, name: p.name }) }}>
               <div className="tt">{p.name}</div>
               <div className="small dim">{t('Segments: {0} · {1} min', p.segments.length, fmtNum(planMinutes(p)))}</div>
             </button>

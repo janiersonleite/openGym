@@ -152,3 +152,53 @@ describe('editing and deleting', () => {
     act(() => r.unmount()); askHost.remove()
   })
 })
+
+describe('the total while writing a plan', () => {
+  const live = () => host.querySelector('.cardio-plan-total').textContent
+
+  it('is on screen from the first segment, and follows each one added, before anything is saved', () => {
+    mount()
+    act(() => button('New plan').click())
+    expect(live()).toBe('Segments: 1 · 5 min')
+    act(() => button('Add segment').click())
+    // The new segment copies the last: 5 + 5.
+    expect(live()).toBe('Segments: 2 · 10 min')
+    act(() => button('Add segment').click())
+    expect(live()).toBe('Segments: 3 · 15 min')
+    expect(useStore.getState().S.cardioPlans).toEqual({})   // nothing saved yet
+    // The line next to "Add segment" says it too.
+    expect(host.textContent).toContain('Total: 15 min')
+  })
+
+  it('follows a change of minutes and a removed segment', () => {
+    mount()
+    act(() => button('New plan').click())
+    act(() => button('Add segment').click())
+    act(() => host.querySelector('.cardio-seg button[aria-label^="Increase"]').click())
+    expect(live()).toMatch(/^Segments: 2 · 1[01] min$/)
+    act(() => host.querySelector('button[aria-label="Remove segment"]').click())
+    expect(live()).toMatch(/^Segments: 1 · \d+ min$/)
+  })
+})
+
+describe('without a workout (no onApply)', () => {
+  it('opens a plan to edit instead of loading it', () => {
+    const seeded = clone(DEF)
+    savePlan(seeded, newPlan('Hills', [{ min: 3, speed: 5, incline: 4 }, { min: 3, speed: 5.4 }], 1))
+    mount({ onApply: undefined }, { cardioPlans: seeded.cardioPlans })
+    act(() => host.querySelector('.cardio-plan-pick').click())
+    expect(host.textContent).toContain('Edit plan')
+    expect(host.querySelector('.cardio-plan-total').textContent).toBe('Segments: 2 · 6 min')
+  })
+
+  it('writes and saves a plan from nothing', () => {
+    mount({ onApply: undefined, sets: undefined })
+    act(() => button('New plan').click())
+    type(host.querySelector('input[aria-label="Plan name"]'), 'Quick walk')
+    act(() => button('Save plan').click())
+    const plans = Object.values(useStore.getState().S.cardioPlans)
+    expect(plans).toHaveLength(1)
+    expect(plans[0].name).toBe('Quick walk')
+    expect(host.textContent).toContain('Quick walk')
+  })
+})
